@@ -1,0 +1,5 @@
+"""
+
+Integración con rabbitMQ
+
+"""
