@@ -24,3 +24,4 @@ app = FastAPI()
 #!Incluimos el endpoint del usuarios
 app.include_router(users_router)
 
+
