@@ -5,7 +5,7 @@ Modelos de datos (usuarios, mensajes...)
 
 from pydantic import BaseModel, Field, ConfigDict
 
-class User_create(BaseModel):
+class UserCreate(BaseModel):
     
     """
     estructura de los datos que recibiremos al registrar un usuario

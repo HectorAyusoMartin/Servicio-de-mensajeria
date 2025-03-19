@@ -1,5 +1,5 @@
 """
-Funciones y endpoints para manejar la lógica de la autenticación
+Funciones de hashing y autenticacion
 
 """
 
