@@ -6,3 +6,5 @@ python-jose[cryptography]
 pika
 cryptography
 python-dotenv
+passlib[bcrypt]
+
