@@ -3,7 +3,7 @@ Modelos de datos (usuarios, mensajes...)
 
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 class User_create(BaseModel):
     
@@ -17,5 +17,8 @@ class User_create(BaseModel):
     
     username:str = Field(..., min_length=3, max_length=50)
     password:str = Field(..., min_length=6)
+    
+    
+    model_config = ConfigDict(extra="forbid") #! Esto bloquea campos adicionales a los establecidos aqui.
     
     
