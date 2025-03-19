@@ -3,14 +3,21 @@ router con el endpoint para registrar usuarios.
 
 """
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from app.models import UserCreate
 from app.db import usuarios_collection
-from app.utils.security import get_password_hash
+from app.utils.security import get_password_hash, verify_password
+from app.utils.jwt import create_access_token
+from datetime import timedelta
+
 
 
 
 router = APIRouter()
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
 
 @router.post("/register",status_code=status.HTTP_201_CREATED)
 async def register_user(user : UserCreate):
@@ -37,6 +44,25 @@ async def register_user(user : UserCreate):
         return {"msg":"Usuario registrado exitosamente"}
     else:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail="Error en el proceso de registro del usuario.")
+    
+@router.post("/login")
+async def login(form_data : OAuth2PasswordRequestForm = Depends()):
+    
+    """
+    Autentica al usuario y devuelve un token JWT si las credenciales son correctas
+    
+    """
+    
+    user = await usuarios_collection.find_one({"username":form_data.username})
+    
+    if not user or not verify_password(form_data.password, user["password"]):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="La contraseña no es correcta")
+    
+    access_token = create_access_token(
+        data={"sub":user["username"]}, expires_delta=timedelta(minutes=30)
+        
+    )
+    return {"access_token":access_token,"token_type":"bearer"}
     
     
 if __name__ == "__main__":
