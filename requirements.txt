@@ -7,4 +7,5 @@ pika
 cryptography
 python-dotenv
 passlib[bcrypt]
+websockets
 
