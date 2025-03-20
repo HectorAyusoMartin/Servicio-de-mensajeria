@@ -5,11 +5,12 @@ router con el endpoint para registrar usuarios.
 
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from app.models import UserCreate
+from app.models.users import UserCreate
 from app.db import usuarios_collection
 from app.utils.security import get_password_hash, verify_password
 from app.utils.jwt import create_access_token
 from datetime import timedelta
+
 
 
 
