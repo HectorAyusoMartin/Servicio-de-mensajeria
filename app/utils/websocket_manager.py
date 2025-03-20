@@ -2,6 +2,7 @@ from typing import List
 from fastapi import WebSocket, WebSocketDisconnect
 from app.database.connection import mensajes_collection
 from datetime import datetime
+from app.utils.security import encrypt_message
 
 
 class ConnectionManager:
@@ -12,19 +13,21 @@ class ConnectionManager:
         
     async def store_message(self, username:str , message:str):
         
-        """
-        Guardamos el mensaje en Mongo DB ATLAS
+        """Guarda los mensajes en MongoDB, cifrando solo los mensajes de los usuarios."""
+    
+        # No cifrar mensajes del sistema (ej: "{usuario} se ha unido")
         
-        """
+        if message.startswith("🔵") or message.startswith("🔴"):
+            encrypted_message = message  # Se almacena tal cual
+        else:
+            encrypted_message = encrypt_message(message)  # Cifrar solo mensajes normales
+
+        await mensajes_collection.insert_one({
+            "username": username,
+            "message": encrypted_message,
+            "timestamp": datetime.utcnow().isoformat()
+        })
         
-        message_data={
-            
-            "username":username,
-            "message":message,
-            "timestamp":datetime.utcnow()
-        }
-        
-        mensajes_collection.insert_one(message_data)
         
     async def connect(self,websocket:WebSocket):
         
