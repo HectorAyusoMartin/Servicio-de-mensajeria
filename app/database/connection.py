@@ -31,9 +31,8 @@ database = client.Chat_app
 usuarios_collection = database.get_collection("Usuarios")
 
 
-# Si en el futuro deseas agregar más colecciones (por ejemplo, para mensajes), puedes definirlas aquí:
-# mensajes_collection = database.get_collection("mensajes")
+#!Si en el futuro deseas agregar más colecciones (por ejemplo, para mensajes), puedes definirlas aquí:
+#!mensajes_collection = database.get_collection("mensajes")
 
-
-
-
+# Crear la colección de mensajes
+mensajes_collection = database["mensajes"]

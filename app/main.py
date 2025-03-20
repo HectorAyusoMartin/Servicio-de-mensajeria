@@ -13,27 +13,18 @@ A continuación te muestro un ejemplo en el archivo main.py que integra autentic
 
 """
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import jwt, JWTError
-from passlib.context import CryptContext
-from datetime import datetime, timedelta
-import motor.motor_asyncio
+from fastapi import FastAPI
+from app.routers.users import router as users_router
+from app.routers.chat import router as chat_router
+
 
 
 app = FastAPI()
 
-# Variables de seguridad
-SECRET_KEY = "CLAVE_SUPER_SECRETA"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE = 30
+
+#!Incluimos el endpoint del usuarios
+app.include_router(users_router)
+app.include_router(chat_router)
 
 
-# Configuracion a la base de datos
-client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://localhost:27017")
-db = client.chat_app
-
-# Contexto para el hashing de contraseñas
-pwd_context = CryptContext(schemes=["bcrypt"],deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
