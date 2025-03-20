@@ -25,15 +25,15 @@ async def websocket_endpoint(websocket: WebSocket):
     username = payload.get("sub")  # Extraer el nombre de usuario del token
 
     await manager.connect(websocket)
-    await manager.broadcast(f"🔵 {username} se ha unido al chat.")
+    await manager.broadcast(username,message=f"🔵 {username} se ha unido al chat.")
 
     try:
         while True:
             message = await websocket.receive_text()
-            await manager.broadcast(f"{username}: {message}")
+            await manager.broadcast(username,message)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
-        await manager.broadcast(f"🔴 {username} se ha desconectado.")
+        await manager.broadcast(username,message=f"🔴 {username} se ha desconectado.")
         
         """
 
