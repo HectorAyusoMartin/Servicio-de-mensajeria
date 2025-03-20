@@ -6,10 +6,10 @@ router con el endpoint para registrar usuarios.
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from app.models.users import UserCreate
-from app.db import usuarios_collection
+from app.database.connection import usuarios_collection
 from app.utils.security import get_password_hash, verify_password
 from app.utils.jwt import create_access_token
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 
 
@@ -36,7 +36,8 @@ async def register_user(user : UserCreate):
     user_data = {
         
         "username":user.username,
-        "password":hashed_password 
+        "password":hashed_password,
+        "created_at":datetime.utcnow()
         
     }
     

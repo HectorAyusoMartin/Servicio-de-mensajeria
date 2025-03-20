@@ -19,7 +19,7 @@ class UserCreate(BaseModel):
     
     username:str = Field(..., min_length=3, max_length=50)
     password:str = Field(..., min_length=6)
-    created_at:datetime = datetime.utcnow()
+    created_at:datetime
     
     
     
