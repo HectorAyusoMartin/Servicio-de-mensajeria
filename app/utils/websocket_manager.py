@@ -13,16 +13,19 @@ class ConnectionManager:
         
     async def store_message(self, username:str , message:str):
         
-        """
-        Guardamos el mensaje en Mongo DB ATLAS
+        """Guarda los mensajes en MongoDB, cifrando solo los mensajes de los usuarios."""
+    
+        # No cifrar mensajes del sistema (ej: "{usuario} se ha unido")
         
-        """
-        
-        encrypted_message = encrypt_message(message)
+        if message.startswith("🔵") or message.startswith("🔴"):
+            encrypted_message = message  # Se almacena tal cual
+        else:
+            encrypted_message = encrypt_message(message)  # Cifrar solo mensajes normales
+
         await mensajes_collection.insert_one({
-        "username": username,
-        "message": encrypted_message,
-        "timestamp": datetime.utcnow().isoformat()
+            "username": username,
+            "message": encrypted_message,
+            "timestamp": datetime.utcnow().isoformat()
         })
         
         
