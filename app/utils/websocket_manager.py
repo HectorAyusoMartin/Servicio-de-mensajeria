@@ -2,6 +2,7 @@ from typing import List
 from fastapi import WebSocket, WebSocketDisconnect
 from app.database.connection import mensajes_collection
 from datetime import datetime
+from app.utils.security import encrypt_message
 
 
 class ConnectionManager:
@@ -17,14 +18,13 @@ class ConnectionManager:
         
         """
         
-        message_data={
-            
-            "username":username,
-            "message":message,
-            "timestamp":datetime.utcnow()
-        }
+        encrypted_message = encrypt_message(message)
+        await mensajes_collection.insert_one({
+        "username": username,
+        "message": encrypted_message,
+        "timestamp": datetime.utcnow().isoformat()
+        })
         
-        mensajes_collection.insert_one(message_data)
         
     async def connect(self,websocket:WebSocket):
         
