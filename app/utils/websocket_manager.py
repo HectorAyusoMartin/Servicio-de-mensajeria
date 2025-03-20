@@ -1,11 +1,30 @@
 from typing import List
 from fastapi import WebSocket, WebSocketDisconnect
+from app.database.connection import mensajes_collection
+from datetime import datetime
+
 
 class ConnectionManager:
     """Gestiona las conexiones websocket activas"""
     
     def __init__(self):
         self.active_connections: List[WebSocket] = []
+        
+    async def store_message(self, username:str , message:str):
+        
+        """
+        Guardamos el mensaje en Mongo DB ATLAS
+        
+        """
+        
+        message_data={
+            
+            "username":username,
+            "message":message,
+            "timestamp":datetime.utcnow()
+        }
+        
+        mensajes_collection.insert_one(message_data)
         
     async def connect(self,websocket:WebSocket):
         
@@ -26,17 +45,24 @@ class ConnectionManager:
         
         
         self.active_connections.remove(websocket)
-        
-        
-    async def broadcast(self, message:str):
-        
-        """
-        Envia un mensaje de broadcast a todos los usuarios conectados
+           
+    async def broadcast(self,username:str, message:str):
         
         """
+        Envia un mensaje de broadcast a todos los usuarios conectados y lo guarda en AMongo ATLAS
+        
+        """
+        
+        await self.store_message(username,message)
+        
+        
         
         for connection in self.active_connections:
-            await connection.send_text(message)
+            await connection.send_json({
+                "username":username,
+                "message":message,
+                "timestamp":datetime.utcnow().isoformat()
+            })
             
         
 #!Instancia del gestor de conexiones:
