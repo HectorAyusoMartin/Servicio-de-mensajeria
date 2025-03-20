@@ -4,6 +4,8 @@ Modelo de datos para Usuarios
 """
 
 from pydantic import BaseModel, Field, ConfigDict
+from datetime import datetime
+
 
 class UserCreate(BaseModel):
     
@@ -17,6 +19,8 @@ class UserCreate(BaseModel):
     
     username:str = Field(..., min_length=3, max_length=50)
     password:str = Field(..., min_length=6)
+    created_at:datetime = datetime.utcnow()
+    
     
     
     model_config = ConfigDict(extra="forbid") #! Esto bloquea campos adicionales a los establecidos aqui.
