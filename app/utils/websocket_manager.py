@@ -104,8 +104,11 @@ class ConnectionManager:
                 "timestamp": doc["timestamp"]
                 
             })
-        
-            return list(reversed(messages))  #! OJO!! Para que estén en orden cronológico normal
+
+        if not messages:
+            return []
+            
+        return list(reversed(messages))  #! OJO!! Para que estén en orden cronológico normal
     
 
 manager = ConnectionManager()
