@@ -9,6 +9,14 @@ router = APIRouter()
 async def websocket_endpoint(websocket: WebSocket):
     """Maneja la conexión WebSocket con autenticación JWT."""
     
+    user_data = verify_access_token(token)
+    if not user_data:
+        await websocket.close()
+        return
+    
+    username = user_data["sub"]
+    
+    
     # Extraer el token desde la URL manualmente
     token = websocket.query_params.get("token")
 
