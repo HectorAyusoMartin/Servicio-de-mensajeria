@@ -16,6 +16,19 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
 
     username = user_data["sub"]
     await manager.connect(websocket, username)
+    
+    #!Recuperando los mensajes..
+    recent_messages = await manager.get_recent_messages()
+    #!Enviando los mensajes solo al suaurio que se acaba de conectar..
+    for msg in recent_messages:
+        await websocket.send_json({
+            
+            "from":msg["from"],
+            "to":msg["to"],
+            "message":msg["message"],
+            "timestamp":msg["timestamp"]
+        })
+    
     await manager.broadcast("sistema", f"🔵 {username} ha entrado")
 
     try:
