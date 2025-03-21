@@ -2,7 +2,7 @@ from typing import List, Dict
 from fastapi import WebSocket, WebSocketDisconnect
 from app.database.connection import mensajes_collection
 from datetime import datetime
-from app.utils.security import encrypt_message
+from app.utils.security import encrypt_message , decrypt_message
 
 
 class ConnectionManager:
@@ -75,13 +75,38 @@ class ConnectionManager:
 
         for conn in to_remove:
             self.active_connections.remove(conn)
-        
-       
+           
     async def send_private_message(self, message:str, to_username:str):
         websocket = self.active_users.get(to_username)
         if websocket:
             await websocket.send_text(message)
             
-#!Instancia del gestor de conexiones:
+    async def get_recent_messages(self, limit:int = 20):
+        """
+        Recumera los ultimos n mensajes almacenados en la coleccion
+        
+        """
+        
+        cursor = mensajes_collection.find().sort("timestamp",-1).limit(limit)
+        messages = []
+        
+        async for doc in cursor:
+            decrypted_message = doc["message"]
+            #!Desencriptar solo si NO ES mensaje del sistema:
+            if not decrypted_message.startswith("🔵") and not decrypted_message.startswith("🔴"):
+                decrypted_message = decrypt_message(decrypted_message)
+                
+            messages.append({
+                
+                "from": doc.get("from") or doc.get("username"),
+                "to": doc.get("to"),
+                "message": decrypted_message,
+                "timestamp": doc["timestamp"]
+                
+            })
+        
+            return list(reversed(messages))  #! OJO!! Para que estén en orden cronológico normal
+    
+
 manager = ConnectionManager()
     
