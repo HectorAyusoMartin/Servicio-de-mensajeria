@@ -2,6 +2,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, HTTPExce
 from app.utils.websocket_manager import manager
 from app.utils.jwt import verify_access_token
 
+
 router = APIRouter()
 
 
@@ -15,6 +16,7 @@ async def websocket_endpoint(websocket: WebSocket):
         return
     
     username = user_data["sub"]
+    await manager.connect(websocket, username)
     
     
     # Extraer el token desde la URL manualmente
