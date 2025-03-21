@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 from fastapi import WebSocket, WebSocketDisconnect
 from app.database.connection import mensajes_collection
 from datetime import datetime
@@ -10,26 +10,29 @@ class ConnectionManager:
     
     def __init__(self):
         self.active_connections: List[WebSocket] = []
+        self.active_users: Dict[str,WebSocket] = {}
         
-    async def store_message(self, username:str , message:str):
         
-        """Guarda los mensajes en MongoDB, cifrando solo los mensajes de los usuarios."""
-    
-        # No cifrar mensajes del sistema (ej: "{usuario} se ha unido")
+    async def store_message(self, username:str , message:str, to:str = None):
         
+        """
+        Guarda los mensajes en MongoDB, cifrando solo los mensajes de los usuarios.
+        Ahora incluye soporte para mensajes privados con destinatario (to).
+        """
+
         if message.startswith("🔵") or message.startswith("🔴"):
-            encrypted_message = message  # Se almacena tal cual
+            encrypted_message = message  # No cifrar mensajes del sistema
         else:
-            encrypted_message = encrypt_message(message)  # Cifrar solo mensajes normales
+            encrypted_message = encrypt_message(message)
 
         await mensajes_collection.insert_one({
-            "username": username,
+            "from": username,
+            "to": to,  # Esto puede ser None (mensaje público)
             "message": encrypted_message,
             "timestamp": datetime.utcnow().isoformat()
         })
         
-        
-    async def connect(self,websocket:WebSocket):
+    async def connect(self,websocket:WebSocket, username:str):
         
         """
         Acepta una nueva conexion websocket
@@ -38,8 +41,9 @@ class ConnectionManager:
         
         await websocket.accept()
         self.active_connections.append(websocket)
-        
-    async def disconnect(self, websocket: WebSocket):
+        self.active_users[username] = websocket
+               
+    async def disconnect(self, websocket: WebSocket, username:str):
         
         """
         Elimina una conexion websocket cuando un usuario se desconecta
@@ -48,6 +52,7 @@ class ConnectionManager:
         
         
         self.active_connections.remove(websocket)
+        self.active_users.pop(username,None)
            
     async def broadcast(self,username:str, message:str):
         
@@ -55,19 +60,28 @@ class ConnectionManager:
         Envia un mensaje de broadcast a todos los usuarios conectados y lo guarda en AMongo ATLAS
         
         """
-        
-        await self.store_message(username,message)
-        
-        
-        
+        await self.store_message(username, message)
+
+        to_remove = []
         for connection in self.active_connections:
-            await connection.send_json({
-                "username":username,
-                "message":message,
-                "timestamp":datetime.utcnow().isoformat()
-            })
-            
+            try:
+                await connection.send_json({
+                    "username": username,
+                    "message": message,
+                    "timestamp": datetime.utcnow().isoformat()
+                })
+            except Exception:
+                to_remove.append(connection)
+
+        for conn in to_remove:
+            self.active_connections.remove(conn)
         
+       
+    async def send_private_message(self, message:str, to_username:str):
+        websocket = self.active_users.get(to_username)
+        if websocket:
+            await websocket.send_text(message)
+            
 #!Instancia del gestor de conexiones:
 manager = ConnectionManager()
     
